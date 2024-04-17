@@ -3,8 +3,27 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+import { init } from '@web3-onboard/react'
+import initInjectedWallets from '@web3-onboard/injected-wallets'
 import './App.css'
 
+init({
+  wallets: [initInjectedWallets()],
+  chains: [
+    {
+      id: 1,
+      token: 'ETH',
+      label: 'Ethereum Mainnet',
+      rpcUrl: `https://mainnet.infura.io/v3/${import.meta.env.VITE_INFURA_KEY}`,
+    },
+    {
+      id: 11155111,
+      token: 'ETH',
+      label: 'Sepolia',
+      rpcUrl: `https://sepolia.infura.io/v3/${import.meta.env.VITE_INFURA_KEY}`,
+    },
+  ]
+})
 
 function App() {
   return (
