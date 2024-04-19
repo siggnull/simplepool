@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import AppBar from '@mui/material/AppBar'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
@@ -5,22 +6,27 @@ import CssBaseline from '@mui/material/CssBaseline'
 import TextField from '@mui/material/TextField'
 import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
-import { init, useConnectWallet } from '@web3-onboard/react'
-import initInjectedWallets from '@web3-onboard/injected-wallets'
-import ConnectButton from './components/ConnectButton'
+import type { EIP1193Provider } from '@web3-onboard/common'
+import Onboard from '@web3-onboard/core'
+import injectedModule from '@web3-onboard/injected-wallets'
 import './App.css'
 
-init({
-  wallets: [initInjectedWallets()],
+const MAINNET_CHAIN_ID = 1
+const SEPOLIA_CHAIN_ID = 11155111
+
+const injected = injectedModule()
+
+const onboard = Onboard({
+  wallets: [injected],
   chains: [
     {
-      id: 1,
+      id: MAINNET_CHAIN_ID,
       token: 'ETH',
       label: 'Ethereum Mainnet',
       rpcUrl: `https://mainnet.infura.io/v3/${import.meta.env.VITE_INFURA_KEY}`,
     },
     {
-      id: 11155111,
+      id: SEPOLIA_CHAIN_ID,
       token: 'ETH',
       label: 'Sepolia',
       rpcUrl: `https://sepolia.infura.io/v3/${import.meta.env.VITE_INFURA_KEY}`,
@@ -28,8 +34,38 @@ init({
   ]
 })
 
-function App() {
-  const [{ wallet }] = useConnectWallet()
+export default function App() {
+  const [_, setProvider] = useState<EIP1193Provider>()
+  const [account, setAccount] = useState("")
+  const [error, setError] = useState("")
+  const [chainId, setChainId] = useState("")
+
+  const connectWallet = async () => {
+    try {
+      const wallets = await onboard.connectWallet()
+
+      const { accounts, chains, provider } = wallets[0]
+      setAccount(accounts[0].address)
+      setChainId(chains[0].id)
+      setProvider(provider)
+      setError("")
+    } catch (error) {
+      setError(String(error))
+    }
+  }
+
+  const disconnectWallet = async () => {
+    const [primaryWallet] = onboard.state.get().wallets
+    if (!primaryWallet) return
+    await onboard.disconnectWallet({ label: primaryWallet.label })
+    refreshState()
+  }
+
+  const refreshState = () => {
+    setAccount("")
+    setChainId("")
+    setProvider(undefined)
+  }
 
   return (
     <>
@@ -39,7 +75,11 @@ function App() {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Simple Pool
           </Typography>
-          <ConnectButton/>
+          {!account ? (
+            <Button variant="outlined" color="inherit" onClick={connectWallet}>Connect Wallet</Button>
+          ) : (
+            <Button variant="outlined" color="inherit" onClick={disconnectWallet}>Disconnect Wallet</Button>
+          )}
         </Toolbar>
       </AppBar>
       <Box component="form"
@@ -49,14 +89,14 @@ function App() {
           flexDirection: 'column',
           alignItems: 'center',
         }}
-        visibility={wallet ? 'visible' : 'hidden'}
+        visibility={account ? 'visible' : 'hidden'}
       >
         <Box>
           <Box>
-            <Box>Wallet: {wallet?.accounts[0].address}</Box>
+            Chain ID: {chainId}
           </Box>
           <Box>
-            <Box>Balance: 0 mETH</Box>
+            Wallet: {account}
           </Box>
           <Box>
             <TextField label="Amount" size="small"></TextField>
@@ -66,10 +106,14 @@ function App() {
             <TextField label="Amount" size="small"></TextField>
             <Button variant="contained" style={{ width: 120}}>Withthdraw</Button>
           </Box>
+          <Box>
+            Staked: 0 ETH
+          </Box>
+          <Box visibility={error ? 'visible' : 'hidden'}>
+            {error}
+          </Box>
         </Box>
       </Box>
     </>
   )
 }
-
-export default App
