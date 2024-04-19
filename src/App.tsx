@@ -11,8 +11,8 @@ import Onboard from '@web3-onboard/core'
 import injectedModule from '@web3-onboard/injected-wallets'
 import './App.css'
 
-const MAINNET_CHAIN_ID = 1
-const SEPOLIA_CHAIN_ID = 11155111
+const MAINNET_CHAIN_ID = "0x1"
+const SEPOLIA_CHAIN_ID = "0xaa36a7"
 
 const injected = injectedModule()
 
