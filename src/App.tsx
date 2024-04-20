@@ -111,7 +111,7 @@ export default function App() {
       >
         <Box>
           <Box>
-            Chain: {chainName}
+            Chain: {chainName} ({chainId})
           </Box>
           <Box>
             Wallet: {account}
