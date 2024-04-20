@@ -39,6 +39,17 @@ export default function App() {
   const [account, setAccount] = useState("")
   const [error, setError] = useState("")
   const [chainId, setChainId] = useState("")
+  const [chainName, setChainName] = useState("")
+
+  const getChainName = (id: string) => {
+    for (const chain of onboard.state.get().chains) {
+      if (chain.id === id) {
+        return chain.label || "Not set"
+      }
+    }
+
+    return 'Unknown'
+  }
 
   const connectWallet = async () => {
     try {
@@ -47,6 +58,7 @@ export default function App() {
       const { accounts, chains, provider } = wallets[0]
       setAccount(accounts[0].address)
       setChainId(chains[0].id)
+      setChainName(getChainName(chains[0].id))
       setProvider(provider)
       setError("")
     } catch (error) {
@@ -93,7 +105,7 @@ export default function App() {
       >
         <Box>
           <Box>
-            Chain ID: {chainId}
+            Chain: {chainName}
           </Box>
           <Box>
             Wallet: {account}
