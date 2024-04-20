@@ -79,6 +79,12 @@ export default function App() {
     setProvider(undefined)
   }
 
+  const deposit = async () => {
+  }
+
+  const withdraw = async () => {
+  }
+
   return (
     <>
       <CssBaseline/>
@@ -112,11 +118,11 @@ export default function App() {
           </Box>
           <Box>
             <TextField label="Amount" size="small"></TextField>
-            <Button variant="contained" style={{ width: 120}}>Deposit</Button>
+            <Button variant="contained" style={{ width: 120}} onClick={deposit}>Deposit</Button>
           </Box>
           <Box>
             <TextField label="Amount" size="small"></TextField>
-            <Button variant="contained" style={{ width: 120}}>Withthdraw</Button>
+            <Button variant="contained" style={{ width: 120}} onClick={withdraw}>Withthdraw</Button>
           </Box>
           <Box>
             Staked: 0 ETH
