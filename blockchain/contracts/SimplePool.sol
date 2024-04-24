@@ -1,51 +1,64 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity 0.8.25;
 
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "./SimpleToken.sol";
 
-struct BalanceChange {
-    uint timestamp;
-    int8 sign;
-    uint amount;
-}
 
 contract SimplePool {
-    // map addresses to balance changes
-    mapping(address => BalanceChange[]) balanceChanges;
+    uint totalPooled = 0;
+    ERC20 token;
 
-    function change(address addr, uint timestamp, int8 sign, uint amount) private {
-        balanceChanges[addr].push(BalanceChange({timestamp: timestamp, sign: sign, amount: amount}));
+    error InsufficientLiquidity();
+    error UnableToWithdraw();
+
+    constructor() {
+        token = SimpleToken();
     }
 
-    // get balance for an address
-    function getBalance(address addr) public view returns (int result) {
-        if (balanceChanges[addr].length > 0) {
-            for (uint i = 0; i < balanceChanges[addr].length; i++) {
-                if (balanceChanges[addr][i].sign > 0) {
-                    result += int(balanceChanges[addr][i].amount);
-                }
-                else {
-                    result -= int(balanceChanges[addr][i].amount);
-                }
-            }
+    function deposit() external payable {
+        share = _shareForDepositAmount(msg.value);
+
+        token.mint(msg.sender, share);
+    }
+
+    function withdraw(uint _amount) external {
+        if (token.balanceOf(msg.sender) < _amount) {
+            revert InsufficientLiquidity();
         }
 
-        return 0;
+        uint share = _shareForWithdrawalAmount(_amount);
+
+        token.burn(msg.sender, share);
+
+        (bool sent, ) = msg.sender.call{value: _amount}("");
+        if (!sent) {
+            revert UnableToWithdraw();
+        }
     }
 
-    // deposit function to add positive balance changes
-    function deposit() public payable {
-        change(msg.sender, block.timestamp, 1, msg.value);
+    function reward() external payable {
+        totalPooled += msg.value;
     }
 
-    // withdraw function to add negative balance changes
-    function withdraw(uint amount) public payable {
-        // check balance
-        if (getBalance(msg.sender) < int(amount)) {
-            revert("Not enough balance");
+    function _shareForDepositAmount(uint _amount) returns uint {
+        if (totalPooled == 0) {
+            return _amount;
         }
 
-        change(msg.sender, block.timestamp, -1, amount);
+        return _amount / totalPooled;
+    }
 
-        payable(msg.sender).transfer(amount);
+    function _shareForWithdrawalAmount(uint _amount) returns uint {
+        if (totalPooled == 0) {
+            return 0;
+        }
+
+        // make small rounding errors favor the protocol rather than the user
+        return (_amount * token.totalSupply() + totalPooled - 1) / totalPooled;
+    }
+
+    receive() external payable {
+        totalPooled += msg.value;
     }
 }
