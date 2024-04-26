@@ -7,33 +7,33 @@ import "./interfaces/ISimplePool.sol";
 
 
 contract SimpleToken is Ownable, ERC20 {
-    ISimplePool pool;
+    ISimplePool private _pool;
 
-    constructor(ISimplePool _pool) Ownable(address(_pool)) ERC20("Simple Token", "STK") {
-        pool = _pool;
+    constructor(ISimplePool pool) Ownable(address(_pool)) ERC20("Simple Token", "STK") {
+        _pool = pool;
     }
 
-    function mint(address _account, uint256 _amount) public onlyOwner {
-        _mint(_account, _amount);
+    function mint(address account, uint256 amount) public onlyOwner {
+        _mint(account, amount);
     }
 
-    function burn(address _account, uint256 _amount) public onlyOwner {
-        _burn(_account, _amount);
+    function burn(address account, uint256 amount) public onlyOwner {
+        _burn(account, amount);
     }
 
     function totalShares() public view returns (uint256) {
         return super.totalSupply();
     }
 
-    function sharesOf(address _account) public view returns (uint256) {
-        return super.balanceOf(_account);
+    function sharesOf(address account) public view returns (uint256) {
+        return super.balanceOf(account);
     }
 
     function totalSupply() public view override returns (uint256) {
-        return pool.poolTotalSupply();
+        return _pool.poolTotalSupply();
     }
 
-    function balanceOf(address _account) public view override returns (uint256) {
-        return pool.poolBalanceOf(_account);
+    function balanceOf(address account) public view override returns (uint256) {
+        return _pool.poolBalanceOf(account);
     }
 }
