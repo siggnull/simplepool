@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.25;
+pragma solidity 0.8.24;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./interfaces/ISimplePool.sol";
@@ -8,17 +8,17 @@ import "./SimpleToken.sol";
 
 contract SimplePool is ISimplePool {
     uint256 totalPooled = 0;
-    ERC20 token;
+    SimpleToken token;
 
     error InsufficientLiquidity();
     error UnableToWithdraw();
 
     constructor() {
-        token = SimpleToken(this);
+        token = new SimpleToken(this);
     }
 
     function deposit() external payable {
-        share = _shareForDepositAmount(msg.value);
+        uint256 share = _shareForDepositAmount(msg.value);
 
         token.mint(msg.sender, share);
     }
@@ -42,7 +42,7 @@ contract SimplePool is ISimplePool {
         totalPooled += msg.value;
     }
 
-    function _shareForDepositAmount(uint256 _amount) returns uint256 {
+    function _shareForDepositAmount(uint256 _amount) internal view returns (uint256) {
         if (totalPooled == 0) {
             return _amount;
         }
@@ -50,7 +50,7 @@ contract SimplePool is ISimplePool {
         return _amount / totalPooled;
     }
 
-    function _shareForWithdrawalAmount(uint256 _amount) returns uint256 {
+    function _shareForWithdrawalAmount(uint256 _amount) internal view returns (uint256) {
         if (totalPooled == 0) {
             return 0;
         }
@@ -66,7 +66,7 @@ contract SimplePool is ISimplePool {
     function poolBalanceOf(address _user) external view returns (uint256 result) {
         uint256 totalShares = token.totalShares();
         if (totalShares > 0) {
-            result = (totalSupply() * token.sharesOf(_user)) / totalShares;
+            result = (this.poolTotalSupply() * token.sharesOf(_user)) / totalShares;
         }
     }
 

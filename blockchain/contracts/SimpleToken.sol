@@ -1,22 +1,23 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.25;
+pragma solidity 0.8.24;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "./interfaces/ISimplePool.sol";
 
 
 contract SimpleToken is Ownable, ERC20 {
     ISimplePool pool;
 
-    constructor(ISimplePool _pool) ERC20("Simple Token", "STK") {
-        pool = _pool
+    constructor(ISimplePool _pool) Ownable(address(_pool)) ERC20("Simple Token", "STK") {
+        pool = _pool;
     }
 
     function mint(address _account, uint256 _amount) public onlyOwner {
         _mint(_account, _amount);
     }
 
-    function burn(address account, uint256 amount) public onlyOwner {
+    function burn(address _account, uint256 _amount) public onlyOwner {
         _burn(_account, _amount);
     }
 
