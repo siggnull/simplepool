@@ -14,7 +14,7 @@ contract SimplePool is ISimplePool {
     error UnableToWithdraw();
 
     constructor() {
-        token = SimpleToken();
+        token = SimpleToken(this);
     }
 
     function deposit() external payable {
