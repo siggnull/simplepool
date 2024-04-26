@@ -59,14 +59,14 @@ contract SimplePool is ISimplePool {
         return (amount * _token.totalSupply() + _totalPooled - 1) / _totalPooled;
     }
 
-    function poolTotalSupply() external view returns (uint256) {
+    function totalSupply() external view returns (uint256) {
         return _totalPooled;
     }
 
-    function poolBalanceOf(address _address) external view returns (uint256 result) {
+    function balanceOf(address _address) external view returns (uint256 result) {
         uint256 totalShares = _token.totalShares();
         if (totalShares > 0) {
-            result = (this.poolTotalSupply() * _token.sharesOf(_address)) / totalShares;
+            result = (this.totalSupply() * _token.sharesOf(_address)) / totalShares;
         }
     }
 

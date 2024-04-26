@@ -30,10 +30,10 @@ contract SimpleToken is Ownable, ERC20 {
     }
 
     function totalSupply() public view override returns (uint256) {
-        return _pool.poolTotalSupply();
+        return _pool.totalSupply();
     }
 
     function balanceOf(address account) public view override returns (uint256) {
-        return _pool.poolBalanceOf(account);
+        return _pool.balanceOf(account);
     }
 }
