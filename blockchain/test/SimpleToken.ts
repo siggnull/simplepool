@@ -9,9 +9,9 @@ describe("SimpleToken", function () {
         const SimpleToken = await hre.ethers.getContractFactory("SimpleToken")
         const simpleToken = await SimpleToken.deploy()
 
-        const [owner] = await hre.ethers.getSigners();
+        const [owner, otherSigner] = await hre.ethers.getSigners();
 
-        return { simpleToken, owner }
+        return { simpleToken, owner, otherSigner }
     }
 
     describe("Deployment", function () {
@@ -35,6 +35,18 @@ describe("SimpleToken", function () {
             let wallet = ethers.Wallet.createRandom()
 
             await expect(simpleToken.burn(wallet.address, 1)).to.be.revertedWithCustomError(simpleToken, ("UnauthorizedAccount"))
+        })
+
+        it("Should have zero total supply", async function () {
+            const { simpleToken } = await loadFixture(deploySimpleTokenFixture)
+
+            expect(await simpleToken.totalSupply()).to.equal(0)
+        })
+
+        it ("Should have zero total shares", async function () {
+            const { simpleToken } = await loadFixture(deploySimpleTokenFixture)
+
+            expect(await simpleToken.totalShares()).to.equal(0)
         })
     })
 })
