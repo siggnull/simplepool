@@ -1,30 +1,39 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./interfaces/ISimplePool.sol";
-import "./SimpleToken.sol";
+import "./interfaces/ISimpleToken.sol";
 
 
 contract SimplePool is ISimplePool {
     uint256 private _totalPooled = 0;
-    SimpleToken private _token;
+    ISimpleToken private _token;
 
     error InsufficientLiquidity();
     error UnableToWithdraw();
+    error NotInitialized();
 
-    constructor() {
-        _token = new SimpleToken();
-        _token.setPool(this);
+    modifier requireInitialized() {
+        if (address(_token) == address(0)) {
+            revert NotInitialized();
+        }
+        _;
     }
 
-    function deposit() external payable {
+    constructor() {
+    }
+
+    function initialize(ISimpleToken token) external {
+        _token = token;
+    }
+
+    function deposit() external payable requireInitialized {
         uint256 share = _shareForDepositAmount(msg.value);
 
         _token.mint(msg.sender, share);
     }
 
-    function withdraw(uint256 amount) external {
+    function withdraw(uint256 amount) external requireInitialized {
         if (_token.balanceOf(msg.sender) < amount) {
             revert InsufficientLiquidity();
         }
@@ -43,7 +52,7 @@ contract SimplePool is ISimplePool {
         _totalPooled += msg.value;
     }
 
-    function _shareForDepositAmount(uint256 amount) internal view returns (uint256) {
+    function _shareForDepositAmount(uint256 amount) private view returns (uint256) {
         if (_totalPooled == 0) {
             return amount;
         }
@@ -51,7 +60,7 @@ contract SimplePool is ISimplePool {
         return amount / _totalPooled;
     }
 
-    function _shareForWithdrawalAmount(uint256 amount) internal view returns (uint256) {
+    function _shareForWithdrawalAmount(uint256 amount) private view returns (uint256) {
         if (_totalPooled == 0) {
             return 0;
         }
@@ -64,7 +73,7 @@ contract SimplePool is ISimplePool {
         return _totalPooled;
     }
 
-    function balanceOf(address _address) external view returns (uint256 result) {
+    function balanceOf(address _address) external view requireInitialized returns (uint256 result) {
         uint256 totalShares = _token.totalShares();
         if (totalShares > 0) {
             result = (this.totalSupply() * _token.sharesOf(_address)) / totalShares;

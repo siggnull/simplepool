@@ -4,14 +4,15 @@ pragma solidity 0.8.24;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./interfaces/ISimplePool.sol";
+import "./interfaces/ISimpleToken.sol";
 
 
-contract SimpleToken is Ownable, ERC20 {
+contract SimpleToken is ISimpleToken, Ownable, ERC20 {
     ISimplePool private _pool;
 
     error UnauthorizedAccount(address account);
 
-    modifier whenPool() {
+    modifier whenInitialized() {
         if (address(_pool) != address(0)) {
             _;
         }
@@ -27,7 +28,7 @@ contract SimpleToken is Ownable, ERC20 {
     constructor() Ownable(_msgSender()) ERC20("Simple Token", "STK") {
     }
 
-    function setPool(ISimplePool pool) public onlyOwner {
+    function initialize(ISimplePool pool) public onlyOwner {
         _pool = pool;
     }
 
@@ -47,11 +48,11 @@ contract SimpleToken is Ownable, ERC20 {
         return super.balanceOf(account);
     }
 
-    function totalSupply() public view override whenPool returns (uint256 result) {
+    function totalSupply() public view override(ISimpleToken, ERC20) whenInitialized returns (uint256 result) {
         result = _pool.totalSupply();
     }
 
-    function balanceOf(address account) public view override whenPool returns (uint256 result) {
+    function balanceOf(address account) public view override(ISimpleToken, ERC20) whenInitialized returns (uint256 result) {
         result = _pool.balanceOf(account);
     }
 }
