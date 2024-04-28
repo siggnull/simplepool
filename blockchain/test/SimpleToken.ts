@@ -35,7 +35,7 @@ describe("SimpleToken", function () {
         return { ...fixture, simplePoolSigner }
     }
 
-    describe("Deployed", function () {
+    describe("Deployment", function () {
         it("Should have the right owner", async function () {
             const { simpleToken, owner } = await loadFixture(deployTokenFixture)
 
@@ -85,7 +85,7 @@ describe("SimpleToken", function () {
         })
     })
 
-    describe("Initialized", function () {
+    describe("Shares", function () {
         it("Should fail when a stranger calls mint", async function () {
             const { simpleToken, alice } = await loadFixture(initializeTokenFixture)
 
