@@ -9,9 +9,9 @@ describe("SimpleToken", function () {
         const SimpleToken = await hre.ethers.getContractFactory("SimpleToken")
         const simpleToken = await SimpleToken.deploy()
 
-        const [owner, alice] = await hre.ethers.getSigners();
+        const [owner, alice, bob] = await hre.ethers.getSigners();
 
-        return { simpleToken, owner, alice }
+        return { simpleToken, owner, alice, bob }
     }
 
     async function deployTokenAndPoolFixture() {
@@ -135,6 +135,32 @@ describe("SimpleToken", function () {
             await expect(simpleToken.connect(simplePoolSigner).mint(alice.address, 2)).to.not.be.reverted
             await expect(simpleToken.connect(simplePoolSigner).burn(alice.address, 1)).to.not.be.reverted
             await expect(simpleToken.connect(simplePoolSigner).burn(alice.address, 1)).to.not.be.reverted
+        })
+
+        it("Should return correct amount when calliing sharesOf after mint and burn", async function () {
+            const { simpleToken, simplePoolSigner, alice } = await loadFixture(initializeTokenFixture)
+
+            await expect(simpleToken.connect(simplePoolSigner).mint(alice.address, 10)).to.not.be.reverted
+            expect(await simpleToken.sharesOf(alice.address)).to.equal(10)
+
+            await expect(simpleToken.connect(simplePoolSigner).burn(alice.address, 7)).to.not.be.reverted
+            expect(await simpleToken.sharesOf(alice.address)).to.equal(3)
+        })
+
+        it("Should return correct amount when calliing totalShares after mint and burn for multiple accounts", async function () {
+            const { simpleToken, simplePoolSigner, alice, bob } = await loadFixture(initializeTokenFixture)
+
+            await expect(simpleToken.connect(simplePoolSigner).mint(alice.address, 10)).to.not.be.reverted
+            expect(await simpleToken.totalShares()).to.equal(10)
+
+            await expect(simpleToken.connect(simplePoolSigner).mint(bob.address, 20)).to.not.be.reverted
+            expect(await simpleToken.totalShares()).to.equal(30)
+
+            await expect(simpleToken.connect(simplePoolSigner).burn(alice.address, 7)).to.not.be.reverted
+            expect(await simpleToken.totalShares()).to.equal(23)
+
+            await expect(simpleToken.connect(simplePoolSigner).burn(bob.address, 11)).to.not.be.reverted
+            expect(await simpleToken.totalShares()).to.equal(12)
         })
     })
 })
