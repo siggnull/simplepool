@@ -66,13 +66,17 @@ describe("SimpleToken", function () {
             await expect(simpleToken.initialize(simplePool)).to.not.be.reverted
         })
 
-        // it ("Should not fail when calling mint as pool", async function () {
-        //     const { simpleToken, simplePool, alice } = await loadFixture(deploySimpleTokenFixture)
+        it ("Should not fail when calling mint as pool", async function () {
+            const { simpleToken, simplePool, alice } = await loadFixture(deploySimpleTokenFixture)
 
-        //     const simplePoolSigner = await hre.ethers.getImpersonatedSigner(await simplePool.getAddress())
+            const simplePoolAddress = await simplePool.getAddress()
 
-        //     await expect(simpleToken.initialize(simplePool)).to.not.be.reverted
-        //     await expect(simpleToken.connect(simplePoolSigner).mint(alice.address, 1)).to.not.be.reverted
-        // })
+            await hre.network.provider.send("hardhat_setBalance", [simplePoolAddress, "0x100000000000000", ]);
+
+            const simplePoolSigner = await hre.ethers.getImpersonatedSigner(simplePoolAddress)
+
+            await expect(simpleToken.initialize(simplePool)).to.not.be.reverted
+            await expect(simpleToken.connect(simplePoolSigner).mint(alice.address, 1)).to.not.be.reverted
+        })
     })
 })
