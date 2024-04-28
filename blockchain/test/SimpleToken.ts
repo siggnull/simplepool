@@ -1,7 +1,6 @@
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers"
 import { expect } from "chai"
 import hre from "hardhat"
-import { ethers } from "ethers"
 
 
 describe("SimpleToken", function () {
@@ -45,7 +44,7 @@ describe("SimpleToken", function () {
         it("Should fail when mint is called", async function () {
             const { simpleToken } = await loadFixture(deployTokenFixture)
 
-            const wallet = ethers.Wallet.createRandom()
+            const wallet = hre.ethers.Wallet.createRandom()
 
             await expect(simpleToken.mint(wallet.address, 1)).to.be.revertedWithCustomError(simpleToken, ("UnauthorizedAccount"))
         })
@@ -53,7 +52,7 @@ describe("SimpleToken", function () {
         it("Should fail when burn is called", async function () {
             const { simpleToken } = await loadFixture(deployTokenFixture)
 
-            const wallet = ethers.Wallet.createRandom()
+            const wallet = hre.ethers.Wallet.createRandom()
 
             await expect(simpleToken.burn(wallet.address, 1)).to.be.revertedWithCustomError(simpleToken, ("UnauthorizedAccount"))
         })
