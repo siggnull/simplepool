@@ -12,9 +12,13 @@ describe("SimpleToken", function () {
         const SimplePool = await hre.ethers.getContractFactory("SimplePool")
         const simplePool = await SimplePool.deploy()
 
+        const simplePoolAddress = await simplePool.getAddress()
+        await hre.network.provider.send("hardhat_setBalance", [simplePoolAddress, "0x100000000000000", ]);
+        const simplePoolSigner = await hre.ethers.getImpersonatedSigner(simplePoolAddress)
+
         const [owner, alice] = await hre.ethers.getSigners();
 
-        return { simpleToken, simplePool, owner, alice }
+        return { simpleToken, simplePool, simplePoolSigner, owner, alice }
     }
 
     describe("Deployment", function () {
@@ -67,13 +71,7 @@ describe("SimpleToken", function () {
         })
 
         it ("Should not fail when calling mint as pool", async function () {
-            const { simpleToken, simplePool, alice } = await loadFixture(deploySimpleTokenFixture)
-
-            const simplePoolAddress = await simplePool.getAddress()
-
-            await hre.network.provider.send("hardhat_setBalance", [simplePoolAddress, "0x100000000000000", ]);
-
-            const simplePoolSigner = await hre.ethers.getImpersonatedSigner(simplePoolAddress)
+            const { simpleToken, simplePool, simplePoolSigner, alice } = await loadFixture(deploySimpleTokenFixture)
 
             await expect(simpleToken.initialize(simplePool)).to.not.be.reverted
             await expect(simpleToken.connect(simplePoolSigner).mint(alice.address, 1)).to.not.be.reverted
