@@ -86,26 +86,50 @@ describe("SimpleToken", function () {
     })
 
     describe("Initialized", function () {
-        it("Should succeed when pool calls mint", async function () {
+        it("Should fail when a stranger calls mint", async function () {
+            const { simpleToken, alice } = await loadFixture(initializeTokenFixture)
+
+            await expect(simpleToken.connect(alice).mint(alice.address, 1)).to.be.revertedWithCustomError(simpleToken, ("UnauthorizedAccount"))
+        })
+
+        it("Should fail when the owner calls mint", async function () {
+            const { simpleToken, alice } = await loadFixture(initializeTokenFixture)
+
+            await expect(simpleToken.mint(alice.address, 1)).to.be.revertedWithCustomError(simpleToken, ("UnauthorizedAccount"))
+        })
+
+        it("Should succeed when the pool calls mint", async function () {
             const { simpleToken, simplePool, simplePoolSigner, alice } = await loadFixture(initializeTokenFixture)
 
             await expect(simpleToken.connect(simplePoolSigner).mint(alice.address, 1)).to.not.be.reverted
         })
 
-        it("Should fail when pool calls burn with zero shares to burn", async function () {
+        it("Should fail when a stranger calls burn", async function () {
+            const { simpleToken, alice } = await loadFixture(initializeTokenFixture)
+
+            await expect(simpleToken.connect(alice).burn(alice.address, 1)).to.be.revertedWithCustomError(simpleToken, ("UnauthorizedAccount"))
+        })
+
+        it("Should fail when the owner calls burn", async function () {
+            const { simpleToken, alice } = await loadFixture(initializeTokenFixture)
+
+            await expect(simpleToken.burn(alice.address, 1)).to.be.revertedWithCustomError(simpleToken, ("UnauthorizedAccount"))
+        })
+
+        it("Should fail when the pool calls burn with zero shares to burn", async function () {
             const { simpleToken, simplePool, simplePoolSigner, alice } = await loadFixture(initializeTokenFixture)
 
             await expect(simpleToken.connect(simplePoolSigner).burn(alice.address, 1)).to.be.revertedWithCustomError(simpleToken, ("ERC20InsufficientBalance"))
         })
 
-        it("Should fail when pool calls burn with not enough shares to burn", async function () {
+        it("Should fail when the pool calls burn with not enough shares to burn", async function () {
             const { simpleToken, simplePool, simplePoolSigner, alice } = await loadFixture(initializeTokenFixture)
 
             await expect(simpleToken.connect(simplePoolSigner).mint(alice.address, 1)).to.not.be.reverted
             await expect(simpleToken.connect(simplePoolSigner).burn(alice.address, 2)).to.be.revertedWithCustomError(simpleToken, ("ERC20InsufficientBalance"))
         })
 
-        it("Should succeed when pool calls burn with enough shares to burn", async function () {
+        it("Should succeed when the pool calls burn with enough shares to burn", async function () {
             const { simpleToken, simplePool, simplePoolSigner, alice } = await loadFixture(initializeTokenFixture)
 
             await expect(simpleToken.connect(simplePoolSigner).mint(alice.address, 2)).to.not.be.reverted
