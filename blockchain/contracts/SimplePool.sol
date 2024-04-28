@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.24;
 
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "./interfaces/ISimplePool.sol";
 import "./interfaces/ISimpleToken.sol";
 
 
-contract SimplePool is ISimplePool {
+contract SimplePool is ISimplePool, Ownable {
     uint256 private _totalPooled = 0;
     ISimpleToken private _token;
 
@@ -20,10 +21,10 @@ contract SimplePool is ISimplePool {
         _;
     }
 
-    constructor() {
+    constructor() Ownable(_msgSender()) {
     }
 
-    function initialize(ISimpleToken token) external {
+    function initialize(ISimpleToken token) external onlyOwner {
         _token = token;
     }
 
