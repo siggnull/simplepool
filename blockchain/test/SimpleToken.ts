@@ -99,7 +99,7 @@ describe("SimpleToken", function () {
         })
 
         it("Should succeed when the pool calls mint", async function () {
-            const { simpleToken, simplePool, simplePoolSigner, alice } = await loadFixture(initializeTokenFixture)
+            const { simpleToken, simplePoolSigner, alice } = await loadFixture(initializeTokenFixture)
 
             await expect(simpleToken.connect(simplePoolSigner).mint(alice.address, 1)).to.not.be.reverted
         })
@@ -117,20 +117,20 @@ describe("SimpleToken", function () {
         })
 
         it("Should fail when the pool calls burn with zero shares to burn", async function () {
-            const { simpleToken, simplePool, simplePoolSigner, alice } = await loadFixture(initializeTokenFixture)
+            const { simpleToken, simplePoolSigner, alice } = await loadFixture(initializeTokenFixture)
 
             await expect(simpleToken.connect(simplePoolSigner).burn(alice.address, 1)).to.be.revertedWithCustomError(simpleToken, ("ERC20InsufficientBalance"))
         })
 
         it("Should fail when the pool calls burn with not enough shares to burn", async function () {
-            const { simpleToken, simplePool, simplePoolSigner, alice } = await loadFixture(initializeTokenFixture)
+            const { simpleToken, simplePoolSigner, alice } = await loadFixture(initializeTokenFixture)
 
             await expect(simpleToken.connect(simplePoolSigner).mint(alice.address, 1)).to.not.be.reverted
             await expect(simpleToken.connect(simplePoolSigner).burn(alice.address, 2)).to.be.revertedWithCustomError(simpleToken, ("ERC20InsufficientBalance"))
         })
 
         it("Should succeed when the pool calls burn with enough shares to burn", async function () {
-            const { simpleToken, simplePool, simplePoolSigner, alice } = await loadFixture(initializeTokenFixture)
+            const { simpleToken, simplePoolSigner, alice } = await loadFixture(initializeTokenFixture)
 
             await expect(simpleToken.connect(simplePoolSigner).mint(alice.address, 2)).to.not.be.reverted
             await expect(simpleToken.connect(simplePoolSigner).burn(alice.address, 1)).to.not.be.reverted
