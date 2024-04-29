@@ -110,6 +110,7 @@ describe("SimplePool", function () {
 
             await expect(simplePool.connect(alice).deposit({ value: TWO_ETHER })).to.not.be.reverted
             await expect(simplePool.connect(alice).withdraw(ONE_ETHER)).to.not.be.reverted
+            await expect(simplePool.connect(alice).withdraw(ONE_ETHER)).to.not.be.reverted
         })
     })
 })
