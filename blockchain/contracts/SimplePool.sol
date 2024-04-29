@@ -29,19 +29,22 @@ contract SimplePool is ISimplePool, Ownable {
     }
 
     function deposit() external payable requireInitialized {
-        uint256 share = _shareForDepositAmount(msg.value);
+        uint256 share = _shareForDepositAmount(msg.value, _totalPooled);
 
+        _totalPooled += msg.value;
         _token.mint(msg.sender, share);
     }
 
     function withdraw(uint256 amount) external requireInitialized {
-        if (_token.balanceOf(msg.sender) < amount) {
+        uint256 balance = this.balanceOf(msg.sender);
+        if (balance < amount) {
             revert InsufficientLiquidity();
         }
 
-        uint256 share = _shareForWithdrawalAmount(amount);
+        uint256 share = _shareForWithdrawalAmount(amount, _totalPooled);
 
         _token.burn(msg.sender, share);
+        _totalPooled -= amount;
 
         (bool sent, ) = msg.sender.call{value: amount}("");
         if (!sent) {
@@ -53,31 +56,31 @@ contract SimplePool is ISimplePool, Ownable {
         _totalPooled += msg.value;
     }
 
-    function _shareForDepositAmount(uint256 amount) private view returns (uint256) {
-        if (_totalPooled == 0) {
+    function _shareForDepositAmount(uint256 amount, uint256 pooled) private pure returns (uint256) {
+        if (pooled == 0) {
             return amount;
         }
 
-        return amount / _totalPooled;
+        return amount / pooled;
     }
 
-    function _shareForWithdrawalAmount(uint256 amount) private view returns (uint256) {
-        if (_totalPooled == 0) {
+    function _shareForWithdrawalAmount(uint256 amount, uint256 pooled) private pure returns (uint256) {
+        if (pooled == 0) {
             return 0;
         }
 
         // make small rounding errors favor the protocol rather than the user
-        return (amount * _token.totalSupply() + _totalPooled - 1) / _totalPooled;
+        return (amount + pooled - 1) / pooled;
     }
 
     function totalSupply() external view returns (uint256) {
         return _totalPooled;
     }
 
-    function balanceOf(address _address) external view requireInitialized returns (uint256 result) {
+    function balanceOf(address account) external view requireInitialized returns (uint256 result) {
         uint256 totalShares = _token.totalShares();
         if (totalShares > 0) {
-            result = (this.totalSupply() * _token.sharesOf(_address)) / totalShares;
+            result = (_totalPooled * _token.sharesOf(account)) / totalShares;
         }
     }
 
