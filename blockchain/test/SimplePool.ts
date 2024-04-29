@@ -4,6 +4,7 @@ import hre from "hardhat"
 
 
 describe("SimplePool", function () {
+    const ONE_TENTH_ETHER = hre.ethers.parseEther("0.1")
     const ONE_ETHER = hre.ethers.parseEther("1")
     const TWO_ETHER = hre.ethers.parseEther("2")
     const THREE_ETHER = hre.ethers.parseEther("3")
@@ -111,6 +112,18 @@ describe("SimplePool", function () {
             await expect(simplePool.connect(alice).deposit({ value: TWO_ETHER })).to.not.be.reverted
             await expect(simplePool.connect(alice).withdraw(ONE_ETHER)).to.not.be.reverted
             await expect(simplePool.connect(alice).withdraw(ONE_ETHER)).to.not.be.reverted
+        })
+
+        it("Should let the user withdraw the entire pooled amount with rewards if he is the only shareholder", async function () {
+            const { simplePool, alice } = await loadFixture(initializePoolFixture)
+
+            await expect(simplePool.connect(alice).deposit({ value: ONE_ETHER })).to.not.be.reverted
+            await expect(simplePool.reward({ value: ONE_TENTH_ETHER })).to.not.be.reverted
+
+            const expectedAmount = hre.ethers.parseEther("1.1")
+            expect(await simplePool.totalSupply()).to.equal(expectedAmount)
+            expect(await simplePool.balanceOf(alice.address)).to.equal(expectedAmount)
+            await expect(simplePool.connect(alice).withdraw(expectedAmount)).to.not.be.reverted
         })
     })
 })
