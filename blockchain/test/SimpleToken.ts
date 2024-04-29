@@ -25,7 +25,7 @@ describe("SimpleToken", function () {
 
         const { simplePool, simpleToken } = fixture
 
-        simpleToken.initialize(simplePool)
+        await simpleToken.initialize(simplePool)
 
         const simplePoolAddress = await simplePool.getAddress()
         await hre.network.provider.send("hardhat_setBalance", [simplePoolAddress, "0x100000000000000", ]);
