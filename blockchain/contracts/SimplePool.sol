@@ -56,21 +56,21 @@ contract SimplePool is ISimplePool, Ownable {
         _totalPooled += msg.value;
     }
 
-    function _shareForDepositAmount(uint256 amount, uint256 pooled) private pure returns (uint256) {
+    function _shareForDepositAmount(uint256 amount, uint256 pooled) private view returns (uint256) {
         if (pooled == 0) {
             return amount;
         }
 
-        return amount / pooled;
+        return amount * _token.totalShares() / pooled;
     }
 
-    function _shareForWithdrawalAmount(uint256 amount, uint256 pooled) private pure returns (uint256) {
+    function _shareForWithdrawalAmount(uint256 amount, uint256 pooled) private view returns (uint256) {
         if (pooled == 0) {
             return 0;
         }
 
         // make small rounding errors favor the protocol rather than the user
-        return (amount + pooled - 1) / pooled;
+        return (amount * _token.totalShares() + pooled - 1) / pooled;
     }
 
     function totalSupply() external view returns (uint256) {
