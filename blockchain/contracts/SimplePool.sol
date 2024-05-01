@@ -78,10 +78,18 @@ contract SimplePool is ISimplePool, Ownable {
     }
 
     function balanceOf(address account) external view requireInitialized returns (uint256 result) {
-        uint256 totalShares = _token.totalShares();
-        if (totalShares > 0) {
-            result = (_totalPooled * _token.sharesOf(account)) / totalShares;
+        uint256 shares = _token.totalShares();
+        if (shares > 0) {
+            result = (_totalPooled * _token.sharesOf(account)) / shares;
         }
+    }
+
+    function totalShares() external view requireInitialized returns (uint256) {
+        return _token.totalShares();
+    }
+
+    function sharesOf(address account) external view requireInitialized returns (uint256 result) {
+        result = _token.sharesOf(account);
     }
 
     receive() external payable {
