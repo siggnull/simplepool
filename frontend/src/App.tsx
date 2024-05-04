@@ -13,6 +13,7 @@ import './App.css'
 
 const MAINNET_CHAIN_ID = "0x1"
 const SEPOLIA_CHAIN_ID = "0xaa36a7"
+const HARDHAT_CHAIN_ID = "0x7a69"
 
 const injected = injectedModule()
 
@@ -31,6 +32,12 @@ const onboard = Onboard({
       label: 'Sepolia',
       rpcUrl: `https://sepolia.infura.io/v3/${import.meta.env.VITE_INFURA_KEY}`,
     },
+    {
+      id: HARDHAT_CHAIN_ID,
+      token: 'ETH',
+      label: 'Hardhat',
+      rpcUrl: 'http://127.0.0.1:8545',
+    }
   ]
 })
 
