@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import AppBar from '@mui/material/AppBar'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
@@ -6,9 +5,8 @@ import CssBaseline from '@mui/material/CssBaseline'
 import TextField from '@mui/material/TextField'
 import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
-import type { EIP1193Provider } from '@web3-onboard/common'
-import Onboard from '@web3-onboard/core'
 import injectedModule from '@web3-onboard/injected-wallets'
+import { init, useConnectWallet } from '@web3-onboard/react'
 import './App.css'
 
 const MAINNET_CHAIN_ID = "0x1"
@@ -17,73 +15,57 @@ const HARDHAT_CHAIN_ID = "0x7a69"
 
 const injected = injectedModule()
 
-const onboard = Onboard({
+const chains = [
+  {
+    id: MAINNET_CHAIN_ID,
+    token: 'ETH',
+    label: 'Ethereum Mainnet',
+    rpcUrl: `https://mainnet.infura.io/v3/${import.meta.env.VITE_INFURA_KEY}`,
+  },
+  {
+    id: SEPOLIA_CHAIN_ID,
+    token: 'ETH',
+    label: 'Sepolia',
+    rpcUrl: `https://sepolia.infura.io/v3/${import.meta.env.VITE_INFURA_KEY}`,
+  },
+  {
+    id: HARDHAT_CHAIN_ID,
+    token: 'ETH',
+    label: 'Hardhat',
+    rpcUrl: 'http://127.0.0.1:8545',
+  }
+]
+
+init({
   wallets: [injected],
-  chains: [
-    {
-      id: MAINNET_CHAIN_ID,
-      token: 'ETH',
-      label: 'Ethereum Mainnet',
-      rpcUrl: `https://mainnet.infura.io/v3/${import.meta.env.VITE_INFURA_KEY}`,
-    },
-    {
-      id: SEPOLIA_CHAIN_ID,
-      token: 'ETH',
-      label: 'Sepolia',
-      rpcUrl: `https://sepolia.infura.io/v3/${import.meta.env.VITE_INFURA_KEY}`,
-    },
-    {
-      id: HARDHAT_CHAIN_ID,
-      token: 'ETH',
-      label: 'Hardhat',
-      rpcUrl: 'http://127.0.0.1:8545',
-    }
-  ]
+  chains: chains
 })
 
 export default function App() {
-  const [_, setProvider] = useState<EIP1193Provider>()
-  const [account, setAccount] = useState("")
-  const [error, setError] = useState("")
-  const [chainId, setChainId] = useState("")
-  const [chainName, setChainName] = useState("")
-
-  const getChainName = (id: string) => {
-    for (const chain of onboard.state.get().chains) {
-      if (chain.id === id) {
-        return chain.label || "Not set"
-      }
-    }
-
-    return 'Unknown'
-  }
+  const [ { wallet }, connect, disconnect ] = useConnectWallet()
 
   const connectWallet = async () => {
-    try {
-      const wallets = await onboard.connectWallet()
-
-      const { accounts, chains, provider } = wallets[0]
-      setAccount(accounts[0].address)
-      setChainId(chains[0].id)
-      setChainName(getChainName(chains[0].id))
-      setProvider(provider)
-      setError("")
-    } catch (error) {
-      setError(String(error))
-    }
+    await connect()
   }
 
   const disconnectWallet = async () => {
-    const [primaryWallet] = onboard.state.get().wallets
-    if (!primaryWallet) return
-    await onboard.disconnectWallet({ label: primaryWallet.label })
-    refreshState()
+    if (!wallet) return
+
+    await disconnect({ label: wallet.label })
   }
 
-  const refreshState = () => {
-    setAccount("")
-    setChainId("")
-    setProvider(undefined)
+  let account = ""
+  let chainId = ""
+  let chainLabel = ""
+  if (wallet) {
+    account = wallet.accounts[0].address
+    chainId = wallet.chains[0].id
+
+    for (const chain of chains) {
+      if (chain.id === chainId) {
+        chainLabel = chain.label
+      }
+    }
   }
 
   const deposit = async () => {
@@ -118,7 +100,7 @@ export default function App() {
       >
         <Box>
           <Box>
-            Chain: {chainName} ({chainId})
+            Chain: {chainLabel} ({chainId})
           </Box>
           <Box>
             Wallet: {account}
@@ -133,9 +115,6 @@ export default function App() {
           </Box>
           <Box>
             Staked: 0 ETH
-          </Box>
-          <Box visibility={error ? 'visible' : 'hidden'}>
-            {error}
           </Box>
         </Box>
       </Box>
