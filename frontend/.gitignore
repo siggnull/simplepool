@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# TypeChain files
+/typechain
+/typechain-types
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
