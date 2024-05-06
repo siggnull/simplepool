@@ -1,3 +1,5 @@
+import { ethers } from 'ethers'
+import { useState } from 'react'
 import AppBar from '@mui/material/AppBar'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
@@ -7,6 +9,7 @@ import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
 import injectedModule from '@web3-onboard/injected-wallets'
 import { init, useConnectWallet } from '@web3-onboard/react'
+import { SimplePool__factory } from '../typechain'
 import './App.css'
 
 const MAINNET_CHAIN_ID = "0x1"
@@ -42,6 +45,7 @@ init({
 })
 
 export default function App() {
+  const [depositAmount, setDepositAmount] = useState("0.0")
   const [ { wallet }, connect, disconnect ] = useConnectWallet()
 
   const connectWallet = async () => {
@@ -69,6 +73,11 @@ export default function App() {
   }
 
   const deposit = async () => {
+    const provider = new ethers.BrowserProvider(window.ethereum)
+    const signer = await provider.getSigner()
+    const simplePool = SimplePool__factory.connect(import.meta.env.VITE_CONTRACT_ADDRESS, signer)
+
+    await simplePool.deposit({ value: ethers.parseEther(depositAmount) })
   }
 
   const withdraw = async () => {
@@ -106,11 +115,11 @@ export default function App() {
             Wallet: {account}
           </Box>
           <Box>
-            <TextField label="Amount" size="small"></TextField>
+            <TextField label="Deposit Amount" size="small" value={depositAmount} onChange={e => setDepositAmount(e.target.value)}></TextField>
             <Button variant="contained" style={{ width: 120}} onClick={deposit}>Deposit</Button>
           </Box>
           <Box>
-            <TextField label="Amount" size="small"></TextField>
+            <TextField label="Withdrawal Amount" size="small"></TextField>
             <Button variant="contained" style={{ width: 120}} onClick={withdraw}>Withthdraw</Button>
           </Box>
           <Box>
