@@ -12,10 +12,12 @@ import {
   Text,
   Title,
 } from '@mantine/core'
+import { notifications, Notifications } from '@mantine/notifications'
 import injectedModule from '@web3-onboard/injected-wallets'
 import { init, useConnectWallet } from '@web3-onboard/react'
 import { SimplePool__factory } from '../typechain'
 import '@mantine/core/styles.css'
+import '@mantine/notifications/styles.css';
 import './App.css'
 
 const MAINNET_CHAIN_ID = "0x1"
@@ -64,10 +66,17 @@ export default function App() {
       const signer = await provider.getSigner()
       const simplePool = SimplePool__factory.connect(import.meta.env.VITE_CONTRACT_ADDRESS, signer)
 
-      const balance = await simplePool.balanceOf(wallet.accounts[0].address)
-
-      setUpdateRequired(false)
-      setAvailableBalance(ethers.formatEther(balance))
+      simplePool.balanceOf(wallet.accounts[0].address).then((balance) => {
+        setUpdateRequired(false)
+        setAvailableBalance(ethers.formatEther(balance))
+      }).catch((error) => {
+        setAvailableBalance("0")
+        notifications.show({
+          color: 'red',
+          title: 'Error',
+          message: error.message,
+        })
+      })
     }
 
     fetchBalance()
@@ -102,9 +111,15 @@ export default function App() {
     const signer = await provider.getSigner()
     const simplePool = SimplePool__factory.connect(import.meta.env.VITE_CONTRACT_ADDRESS, signer)
 
-    await simplePool.deposit({ value: ethers.parseEther(depositAmount.toString()) })
-
-    setUpdateRequired(true)
+    await simplePool.deposit({ value: ethers.parseEther(depositAmount.toString()) }).then(() => {
+      setUpdateRequired(true)
+    }).catch((error) => {
+      notifications.show({
+        color: 'red',
+        title: 'Error',
+        message: error.message,
+      })
+    })
   }
 
   const withdraw = async () => {
@@ -131,6 +146,7 @@ export default function App() {
 
   return (
     <MantineProvider>
+      <Notifications position="top-center"/>
       <AppShell
         header={{ height: 80 }}
         footer={{ height: 80 }}
