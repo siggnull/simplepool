@@ -17,7 +17,7 @@ import injectedModule from '@web3-onboard/injected-wallets'
 import { init, useConnectWallet } from '@web3-onboard/react'
 import { SimplePool__factory } from '../typechain'
 import '@mantine/core/styles.css'
-import '@mantine/notifications/styles.css';
+import '@mantine/notifications/styles.css'
 import './App.css'
 
 const MAINNET_CHAIN_ID = "0x1"
@@ -127,19 +127,19 @@ export default function App() {
 
   function truncateMiddle(str: string, maxLength: number) {
     if (str.length <= maxLength) {
-      return str;
+      return str
     }
   
-    var ellipsis = '...';
-    var truncatedLength = maxLength - ellipsis.length;
+    var ellipsis = '...'
+    var truncatedLength = maxLength - ellipsis.length
   
-    var leftLength = Math.ceil(truncatedLength / 2);
-    var rightLength = Math.floor(truncatedLength / 2);
+    var leftLength = Math.ceil(truncatedLength / 2)
+    var rightLength = Math.floor(truncatedLength / 2)
   
-    var leftSubstring = str.substring(0, leftLength);
-    var rightSubstring = str.substring(str.length - rightLength);
+    var leftSubstring = str.substring(0, leftLength)
+    var rightSubstring = str.substring(str.length - rightLength)
   
-    return leftSubstring + ellipsis + rightSubstring;
+    return leftSubstring + ellipsis + rightSubstring
   }
 
   let addressDisplay = truncateMiddle(address, 13)
