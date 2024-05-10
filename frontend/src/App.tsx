@@ -1,15 +1,21 @@
 import { ethers } from 'ethers'
 import { useState } from 'react'
-import AppBar from '@mui/material/AppBar'
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
-import CssBaseline from '@mui/material/CssBaseline'
-import TextField from '@mui/material/TextField'
-import Toolbar from '@mui/material/Toolbar'
-import Typography from '@mui/material/Typography'
+import {
+  AppShell,
+  Button,
+  Center,
+  Flex,
+  Group,
+  MantineProvider,
+  NumberInput,
+  Paper,
+  Text,
+  Title,
+} from '@mantine/core'
 import injectedModule from '@web3-onboard/injected-wallets'
 import { init, useConnectWallet } from '@web3-onboard/react'
 import { SimplePool__factory } from '../typechain'
+import '@mantine/core/styles.css'
 import './App.css'
 
 const MAINNET_CHAIN_ID = "0x1"
@@ -45,7 +51,8 @@ init({
 })
 
 export default function App() {
-  const [depositAmount, setDepositAmount] = useState("0.0")
+  const [depositAmount, setDepositAmount] = useState<string | number>("0")
+  const [withdrawalAmount, setWithdrawalAmount] = useState<string | number>("0")
   const [ { wallet }, connect, disconnect ] = useConnectWallet()
 
   const connectWallet = async () => {
@@ -77,56 +84,84 @@ export default function App() {
     const signer = await provider.getSigner()
     const simplePool = SimplePool__factory.connect(import.meta.env.VITE_CONTRACT_ADDRESS, signer)
 
-    await simplePool.deposit({ value: ethers.parseEther(depositAmount) })
+    await simplePool.deposit({ value: ethers.parseEther(depositAmount.toString()) })
   }
 
   const withdraw = async () => {
   }
 
+  function truncateMiddle(str: string, maxLength: number) {
+    if (str.length <= maxLength) {
+      return str;
+    }
+  
+    var ellipsis = '...';
+    var truncatedLength = maxLength - ellipsis.length;
+  
+    var leftLength = Math.ceil(truncatedLength / 2);
+    var rightLength = Math.floor(truncatedLength / 2);
+  
+    var leftSubstring = str.substring(0, leftLength);
+    var rightSubstring = str.substring(str.length - rightLength);
+  
+    return leftSubstring + ellipsis + rightSubstring;
+  }
+
+  let accountDisplay = truncateMiddle(account, 13)
+
   return (
-    <>
-      <CssBaseline/>
-      <AppBar position="static">
-        <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Simple Pool
-          </Typography>
-          {!account ? (
-            <Button variant="outlined" color="inherit" onClick={connectWallet}>Connect Wallet</Button>
-          ) : (
-            <Button variant="outlined" color="inherit" onClick={disconnectWallet}>Disconnect Wallet</Button>
-          )}
-        </Toolbar>
-      </AppBar>
-      <Box component="form"
-        sx={{
-          marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-        visibility={account ? 'visible' : 'hidden'}
+    <MantineProvider>
+      <AppShell
+        header={{ height: 80 }}
+        footer={{ height: 80 }}
+        padding="md"
       >
-        <Box>
-          <Box>
-            Chain: {chainLabel} ({chainId})
-          </Box>
-          <Box>
-            Wallet: {account}
-          </Box>
-          <Box>
-            <TextField label="Deposit Amount" size="small" value={depositAmount} onChange={e => setDepositAmount(e.target.value)}></TextField>
-            <Button variant="contained" style={{ width: 120}} onClick={deposit}>Deposit</Button>
-          </Box>
-          <Box>
-            <TextField label="Withdrawal Amount" size="small"></TextField>
-            <Button variant="contained" style={{ width: 120}} onClick={withdraw}>Withthdraw</Button>
-          </Box>
-          <Box>
-            Staked: 0 ETH
-          </Box>
-        </Box>
-      </Box>
-    </>
+        <AppShell.Header>
+          <Group justify="space-between" h="100%" px="md">
+            <Group>
+              <Title order={2}>Simple Pool</Title>
+            </Group>
+            {!account ? (
+              <Button onClick={connectWallet}>Connect Wallet</Button>
+            ) : (
+              <Button onClick={disconnectWallet}>Disconnect Wallet</Button>
+            )}
+          </Group>
+        </AppShell.Header>
+        <AppShell.Main>
+          <Center>
+            <Paper display={wallet ? "block" : "none"} withBorder shadow="lg" radius="lg" p="lg">
+              <Flex direction="column" gap="sm">
+                <Flex direction="row" justify="space-between">
+                  <Text>Chain</Text>
+                  <Text>{chainId} ({chainLabel})</Text>
+                </Flex>
+                <Flex direction="row" justify="space-between">
+                  <Text>Wallet</Text>
+                  <Text>{accountDisplay}</Text>
+                </Flex>
+                <Flex direction="row" align="end">
+                  <NumberInput label="Deposit Amount" value={depositAmount} onChange={setDepositAmount} min={0} step={0.01} flex="1 1 0%"/>
+                  <Button onClick={deposit} w="100">Deposit</Button>
+                </Flex>
+                <Flex direction="row" align="end">
+                  <NumberInput label="Withdrawal Amount" value={withdrawalAmount} onChange={setWithdrawalAmount} min={0} step={0.01}  flex="1 1 0%"/>
+                  <Button onClick={withdraw} w="100">Withdraw</Button>
+                </Flex>
+                <Flex direction="row" justify="space-between">
+                  <Text>Staked</Text>
+                  <Text>{0} ETH</Text>
+                </Flex>
+              </Flex>
+            </Paper>
+          </Center>
+        </AppShell.Main>
+        <AppShell.Footer>
+          <Center h="100%">
+            Footer
+          </Center>
+        </AppShell.Footer>
+      </AppShell>
+    </MantineProvider>
   )
 }

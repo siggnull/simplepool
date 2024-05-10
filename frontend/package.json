@@ -10,10 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@emotion/react": "^11.11.4",
-    "@emotion/styled": "^11.11.5",
-    "@fontsource/roboto": "^5.0.12",
-    "@mui/material": "^5.15.15",
+    "@mantine/core": "^7.9.1",
+    "@mantine/hooks": "^7.9.1",
     "@web3-onboard/injected-wallets": "^2.10.16",
     "@web3-onboard/react": "^2.8.17",
     "ethers": "^6.12.1",
@@ -29,6 +27,9 @@
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.6",
+    "postcss": "^8.4.38",
+    "postcss-preset-mantine": "^1.15.0",
+    "postcss-simple-vars": "^7.0.1",
     "typescript": "^5.2.2",
     "vite": "^5.2.0"
   }
