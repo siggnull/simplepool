@@ -1,5 +1,5 @@
 import { ethers } from 'ethers'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   AppShell,
   Button,
@@ -53,7 +53,25 @@ init({
 export default function App() {
   const [depositAmount, setDepositAmount] = useState<string | number>("0")
   const [withdrawalAmount, setWithdrawalAmount] = useState<string | number>("0")
+  const [availableBalance, setAvailableBalance] = useState("0")
+  const [updateRequired, setUpdateRequired] = useState(false)
   const [ { wallet }, connect, disconnect ] = useConnectWallet()
+
+  useEffect(() => {
+    const fetchBalance = async () => {
+      if (!wallet) return
+      const provider = new ethers.BrowserProvider(window.ethereum)
+      const signer = await provider.getSigner()
+      const simplePool = SimplePool__factory.connect(import.meta.env.VITE_CONTRACT_ADDRESS, signer)
+
+      const balance = await simplePool.balanceOf(wallet.accounts[0].address)
+
+      setUpdateRequired(false)
+      setAvailableBalance(ethers.formatEther(balance))
+    }
+
+    fetchBalance()
+  }, [wallet, updateRequired])
 
   const connectWallet = async () => {
     await connect()
@@ -65,11 +83,11 @@ export default function App() {
     await disconnect({ label: wallet.label })
   }
 
-  let account = ""
+  let address = ""
   let chainId = ""
   let chainLabel = ""
   if (wallet) {
-    account = wallet.accounts[0].address
+    address = wallet.accounts[0].address
     chainId = wallet.chains[0].id
 
     for (const chain of chains) {
@@ -85,6 +103,8 @@ export default function App() {
     const simplePool = SimplePool__factory.connect(import.meta.env.VITE_CONTRACT_ADDRESS, signer)
 
     await simplePool.deposit({ value: ethers.parseEther(depositAmount.toString()) })
+
+    setUpdateRequired(true)
   }
 
   const withdraw = async () => {
@@ -107,7 +127,7 @@ export default function App() {
     return leftSubstring + ellipsis + rightSubstring;
   }
 
-  let accountDisplay = truncateMiddle(account, 13)
+  let addressDisplay = truncateMiddle(address, 13)
 
   return (
     <MantineProvider>
@@ -121,7 +141,7 @@ export default function App() {
             <Group>
               <Title order={2}>Simple Pool</Title>
             </Group>
-            {!account ? (
+            {!wallet ? (
               <Button onClick={connectWallet}>Connect Wallet</Button>
             ) : (
               <Button onClick={disconnectWallet}>Disconnect Wallet</Button>
@@ -138,7 +158,7 @@ export default function App() {
                 </Flex>
                 <Flex direction="row" justify="space-between">
                   <Text>Wallet</Text>
-                  <Text>{accountDisplay}</Text>
+                  <Text>{addressDisplay}</Text>
                 </Flex>
                 <Flex direction="row" align="end">
                   <NumberInput label="Deposit Amount" value={depositAmount} onChange={setDepositAmount} min={0} step={0.01} flex="1 1 0%"/>
@@ -149,8 +169,8 @@ export default function App() {
                   <Button onClick={withdraw} w="100">Withdraw</Button>
                 </Flex>
                 <Flex direction="row" justify="space-between">
-                  <Text>Staked</Text>
-                  <Text>{0} ETH</Text>
+                  <Text>Balance</Text>
+                  <Text>{availableBalance} ETH</Text>
                 </Flex>
               </Flex>
             </Paper>
