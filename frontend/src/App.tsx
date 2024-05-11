@@ -59,23 +59,34 @@ export default function App() {
   const [updateRequired, setUpdateRequired] = useState(false)
   const [ { wallet }, connect, disconnect ] = useConnectWallet()
 
+  const showError = (message: string) => {
+    notifications.show({
+      color: 'red',
+      title: 'Error',
+      message: message,
+      autoClose: 10000,
+    })
+  }
+
+  const getSimplePoolInstance = async () => {
+    const provider = new ethers.BrowserProvider(window.ethereum)
+    const signer = await provider.getSigner()
+    
+    return SimplePool__factory.connect(import.meta.env.VITE_CONTRACT_ADDRESS, signer)
+  }
+
   useEffect(() => {
     const fetchBalance = async () => {
       if (!wallet) return
-      const provider = new ethers.BrowserProvider(window.ethereum)
-      const signer = await provider.getSigner()
-      const simplePool = SimplePool__factory.connect(import.meta.env.VITE_CONTRACT_ADDRESS, signer)
+
+      const simplePool = await getSimplePoolInstance()
 
       simplePool.balanceOf(wallet.accounts[0].address).then((balance) => {
         setUpdateRequired(false)
         setAvailableBalance(ethers.formatEther(balance))
       }).catch((error) => {
         setAvailableBalance("0")
-        notifications.show({
-          color: 'red',
-          title: 'Error',
-          message: error.message,
-        })
+        showError(error.message)
       })
     }
 
@@ -107,18 +118,12 @@ export default function App() {
   }
 
   const deposit = async () => {
-    const provider = new ethers.BrowserProvider(window.ethereum)
-    const signer = await provider.getSigner()
-    const simplePool = SimplePool__factory.connect(import.meta.env.VITE_CONTRACT_ADDRESS, signer)
+    const simplePool = await getSimplePoolInstance()
 
     await simplePool.deposit({ value: ethers.parseEther(depositAmount.toString()) }).then(() => {
       setUpdateRequired(true)
     }).catch((error) => {
-      notifications.show({
-        color: 'red',
-        title: 'Error',
-        message: error.message,
-      })
+      showError(error.message)
     })
   }
 
