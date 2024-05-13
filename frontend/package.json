@@ -14,8 +14,6 @@
     "@mantine/hooks": "^7.9.1",
     "@mantine/notifications": "^7.9.1",
     "@tanstack/react-query": "^5.36.0",
-    "@web3-onboard/injected-wallets": "^2.10.16",
-    "@web3-onboard/react": "^2.8.17",
     "connectkit": "^1.7.3",
     "ethers": "^6.12.1",
     "react": "^18.2.0",
