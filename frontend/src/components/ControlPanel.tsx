@@ -28,28 +28,27 @@ export default function ControlPanel() {
     return SimplePool__factory.connect(import.meta.env.VITE_CONTRACT_ADDRESS, signer)
   }
     
-  useEffect(() => {
-    const fetchBalance = async () => {
-      if (!account.address) return
+  // useEffect(() => {
+  //   const fetchBalance = async () => {
+  //     if (!account.address) return
 
-      const simplePool = await getSimplePoolInstance()
+  //     const simplePool = await getSimplePoolInstance()
 
-      simplePool.balanceOf(account.address).then((balance) => {
-        setUpdateRequired(false)
-        setAvailableBalance(ethers.formatEther(balance))
-      }).catch((error) => {
-        setAvailableBalance("0")
-        showError(error.message)
-      })
-    }
+  //     simplePool.balanceOf(account.address).then((balance) => {
+  //       setUpdateRequired(false)
+  //       setAvailableBalance(ethers.formatEther(balance))
+  //     }).catch((error) => {
+  //       setAvailableBalance("0")
+  //       showError(error.message)
+  //     })
+  //   }
 
-    fetchBalance()
-  }, [account, updateRequired])
+  //   fetchBalance()
+  // }, [account, updateRequired])
 
-
-  let address = account.address || ""
-  let chainId = account.chainId || ""
-  let chainLabel = account.chain?.name || ""
+  let chainLabel = account.chain?.name ?? "Not connected"
+  let chainId = account.chainId ?? 0
+  let address = account.address ?? "Unknown"
     
   const deposit = async () => {
     const simplePool = await getSimplePoolInstance()
@@ -88,7 +87,7 @@ export default function ControlPanel() {
       <Flex direction="column" gap="sm">
         <Flex direction="row" justify="space-between">
           <Text>Chain</Text>
-          <Text>{chainId} ({chainLabel})</Text>
+          <Text>{chainLabel} ({chainId})</Text>
         </Flex>
         <Flex direction="row" justify="space-between">
           <Text>Wallet</Text>
