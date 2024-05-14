@@ -1,15 +1,16 @@
 import { ethers } from 'ethers'
 import { useState, useEffect } from 'react'
-import { useAccount } from 'wagmi'
+import { useAccount, useBalance } from 'wagmi'
 import { Button, Flex, NumberInput, Paper, Text } from '@mantine/core'
 import { notifications } from '@mantine/notifications'
 import { SimplePool__factory } from '../../typechain'
 
 export default function ControlPanel() {
   const account = useAccount()
+  const balance = useBalance({ address: account.address })
   const [depositAmount, setDepositAmount] = useState<string | number>("0")
   const [withdrawalAmount, setWithdrawalAmount] = useState<string | number>("0")
-  const [availableBalance, setAvailableBalance] = useState("0")
+  const [stakedBalance, setStakedBalance] = useState("0")
   const [updateRequired, setUpdateRequired] = useState(false)
 
   const showError = (message: string) => {
@@ -27,24 +28,24 @@ export default function ControlPanel() {
     
     return SimplePool__factory.connect(import.meta.env.VITE_CONTRACT_ADDRESS, signer)
   }
-    
-  // useEffect(() => {
-  //   const fetchBalance = async () => {
-  //     if (!account.address) return
 
-  //     const simplePool = await getSimplePoolInstance()
+  useEffect(() => {
+    const fetchBalance = async () => {
+      if (!account.address) return
 
-  //     simplePool.balanceOf(account.address).then((balance) => {
-  //       setUpdateRequired(false)
-  //       setAvailableBalance(ethers.formatEther(balance))
-  //     }).catch((error) => {
-  //       setAvailableBalance("0")
-  //       showError(error.message)
-  //     })
-  //   }
+      const simplePool = await getSimplePoolInstance()
 
-  //   fetchBalance()
-  // }, [account, updateRequired])
+      simplePool.balanceOf(account.address).then((balance) => {
+        setUpdateRequired(false)
+        setStakedBalance(ethers.formatEther(balance))
+      }).catch((error) => {
+        setStakedBalance("0")
+        showError(error.message)
+      })
+    }
+
+    fetchBalance()
+  }, [account, updateRequired])
 
   let chainLabel = account.chain?.name ?? "Not connected"
   let chainId = account.chainId ?? 0
@@ -93,6 +94,10 @@ export default function ControlPanel() {
           <Text>Wallet</Text>
           <Text>{addressDisplay}</Text>
         </Flex>
+        <Flex direction="row" justify="space-between">
+          <Text>Balance</Text>
+          <Text>{balance.data?.formatted} ETH</Text>
+        </Flex>
         <Flex direction="row" align="end">
           <NumberInput label="Deposit Amount" value={depositAmount} onChange={setDepositAmount} min={0} step={0.01} flex="1 1 0%"/>
           <Button onClick={deposit} w="100">Deposit</Button>
@@ -102,8 +107,8 @@ export default function ControlPanel() {
           <Button onClick={withdraw} w="100">Withdraw</Button>
         </Flex>
         <Flex direction="row" justify="space-between">
-          <Text>Balance</Text>
-          <Text>{availableBalance} ETH</Text>
+          <Text>Staked</Text>
+          <Text>{stakedBalance} ETH</Text>
         </Flex>
       </Flex>
     </Paper>
