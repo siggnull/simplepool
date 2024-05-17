@@ -62,8 +62,15 @@ export default function ControlPanel() {
   }
     
   const withdraw = async () => {
+    const simplePool = await getSimplePoolInstance()
+
+    await simplePool.withdraw(ethers.parseEther(withdrawalAmount.toString())).then(() => {
+      setUpdateRequired(true)
+    }).catch((error) => {
+      showError(error.message)
+    })
   }
-    
+
   function truncateMiddle(str: string, maxLength: number) {
     if (str.length <= maxLength) {
       return str
